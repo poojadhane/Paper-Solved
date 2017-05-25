@@ -1,0 +1,149 @@
+create or replace type cust_tab16 as object
+(cust_id number,cust_name varchar2(20),plan_name varchar2(20));
+
+create type cust_details16 as varray(3) of cust_tab16;
+
+create table cust_tab_details16(srno number primary key,cust_info cust_details16,cust_number number);
+
+insert into cust_tab_details16 values(11,cust_details16(cust_tab16(101,'Adi','Idea'),cust_tab16(102,'Aditi','voda')),8657699102);
+
+insert into cust_tab_details16 values(12,cust_details16(cust_tab16(103,'Aditya','airtel'),cust_tab16(104,'Adu','jio')),8657699102);
+
+select c.srno,t.* from cust_tab_details16 c,table(c.cust_info)t;
+********************************************************************************************
+
+create or replace type paper_obj16 as object
+(paperid number,paperName varchar2(20),publishDate date);
+
+create type paper_details16 as varray(3) of paper_obj16 ;
+
+create table author_tab16(authorid number primary key,authorName varchar2(20),papers paper_details16);
+
+insert into author_tab16 values(11,'pooja',paper_details16(paper_obj16(101,'TOI','23-Apr-2017'),paper_obj16(102,'TOI','25-jun-2017')));
+
+insert into author_tab16 values(12,'poo',paper_details16(paper_obj16(105,'lokmat','08-Apr-2017'),paper_obj16(107,'sakad','10-Apr-1995')));
+
+*******************************************************************************************
+
+create or replace type Address_obj16 as object
+(house_no number,street varchar2(20),city varchar2(20),pincode number,state varchar2(20));
+
+create type AdressTab as varray(3) of Address_obj16;
+
+create table student16(student_id number,student_name varchar2(20),student_adddress AdressTab); 
+
+insert into student16 values(1,'pooja', AdressTab(Address_obj16(12,'Aundh','Pune',442908,'Maha'),Address_obj16(15,'baner','Pune',44297,'Maha')));
+
+insert into student16 values(2,'Aditya', AdressTab(Address_obj16(19,'wakad','Pune',442989,'Maha'),Address_obj16(17,'bavdhan','Pune',442917,'Maha')));
+
+select s.student_name,t.city,t.state,t.street from student16 s,table(s.student_adddress)t where s.student_id=1;
+
+************************************************************************************************
+NESTED TABLE:
+
+
+create or replace type skills_type16 as object
+(skill_id number,skill_name varchar2(20),skill_rating number);
+
+
+create type skill_tab_type16 as table of skills_type16;
+
+create table empmain16(emp_no number primary key,emp_name varchar2(20),all_skills skill_tab_type16) nested table all_skills store as skills;
+
+insert into empmain16 values(11,'pooh',skill_tab_type16(skills_type16(101,'playing',8),skills_type16(102,'sleeping',6)));
+
+insert into empmain16 values(13,'aditya',skill_tab_type16(skills_type16(109,'baketball',8),skills_type16(102,'sleeping',6)));
+
+insert into empmain16 values(1001,'Aman dev',skill_tab_type16(skills_type16(101,'Design',8),skills_type16(201,'code',10),skills_type16(301,'Test',8)));
+
+***************************************************************************
+
+create or replace type increment_type as object
+(incr_id number,incr_date date,incr_amt number);
+
+
+create or replace type skills_type as object
+(skill_id number,skill_name varchar2(20),rating number);
+
+create type increment_tab as table of increment_type;
+create type increment_tab1 as table of skills_type;
+
+create table emp_detail(empno number,emp_name varchar2(30),emp_skills skills_type,emp_incr increment_type);
+********************************************************************************
+Procedure:
+
+create or replace procedure GenerateReport(p_empno emp.empno%type) as
+var emp%rowtype;
+var1 emp%rowtype;
+cursor c1 is select e.empno,e.sal,e.ename,e.deptno from emp e,emp m where e.sal < ( select e.sal from emp e where e.empno=p_empno);
+cursor c2 is select e.empno,e.sal,e.ename,e.deptno from emp e,emp m where e.sal >( select e.sal from emp e where e.empno=p_empno);
+begin
+for var in c1 
+loop
+dbms_output.put_line(c1%rowcount||'emp no is' ||var.empno ||'employee name' ||var.ename ||'dept no' ||var.deptno);
+end loop;
+for var1 in c2
+loop
+dbms_output.put_line(c2%rowcount||'emp no is' ||var1.empno ||'employee name' ||var1.ename ||'dept no' ||var1.deptno);
+end loop;
+exception
+when no_data_found then
+
+dbms_output.put_line('invalid empno');
+end;
+/
+*************************************************************************************
+create or replace package salary_pack as
+function validateID(p_deptno dept.deptno%type) return boolean;
+procedure salary(p_deptno dept.deptno%type);
+end;
+
+create or replace package body salary_pack as
+function validateID(p_deptno dept.deptno%type) return boolean as
+ct number;
+begin
+select count(*) into ct from dept where deptno=p_deptno;
+if ct=1 then
+return true;
+dbms_output.put_line('order is valid');
+else
+return false;
+end if;
+end;
+
+procedure salary(p_deptno dept.deptno%type) as
+d dept.deptno%type;
+ e dept.dname%type;
+s11 emp.sal%type;
+s1 emp.sal%type;
+s emp.sal%type;
+name emp.ename%type;
+name1 emp.ename%type;
+begin
+if(validateID(p_deptno)) then
+select deptno,dname  into d,e  from dept where deptno=p_deptno;
+dbms_output.put_line('*******************************************');
+dbms_output.put_line('Department no is  '  ||  d   || ' Department Name is  '  ||  e);
+dbms_output.put_line('*******************************************');
+select min(sal),max(sal) into s1,s from emp where deptno=p_deptno;
+select ename into name from emp where sal=s1;
+select ename into name1 from emp where sal=s;
+dbms_output.put_line('minimum salary is ' || s1  ||' Drawn by the Emp: ' || name );
+dbms_output.put_line('maximum salary is ' || s  ||' Drawn by the Emp: ' || name1 );
+dbms_output.put_line('*******************************************');
+
+dbms_output.put_line('*******************************************');
+select avg(sal) into s11 from emp e,dept d where e.deptno=d.deptno;
+dbms_output.put_line('Average salary drawn by dept is '|| s11);
+dbms_output.put_line('*******************************************');
+select sum(sal) into s11 from emp e,dept d where e.deptno=d.deptno;
+dbms_output.put_line('Average salary drawn by dept is '|| s11);
+end if;
+exception
+when no_data_found then
+
+dbms_output.put_line('invalid');
+end;
+end;
+
+execute salary_pack.salary(20);

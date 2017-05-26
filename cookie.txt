@@ -1,0 +1,48 @@
+welcome.html
+
+<!DOCTYPE html><html><head><meta charset="ISO-8859-1"><title>Welcome Page</title></head><body><h1> Welcome to my Shopping Application</h1><form action="WelcomeServlet">Enter your name : <input type="text" name="username"/><br><input type="submit" name="submit" value="Proceed" /></form></body></html>
+
+
+--------------------------
+
+welcome.servlet
+
+
+do get
+
+// step 1 - get the name entered by user in string variable        String name = request.getParameter("username");        // step 2 - create a cookie        Cookie ck = new Cookie("uname", name);        // step 3 - add cookie to response        response.addCookie(ck);        //step 4 - prepare the response you want to send to server        PrintWriter out= response.getWriter();        out.print("<b>Welcome !!!! "+name);        out.print("<br>cookies are created for you. "                            + "click on next button to check");        out.print("<form action=\"TestServlet\">");        out.print("<input type=submit value=\"next\"/>");        out.print("</form>");
+
+--------------------------------
+com.cookie.demo.TestServlet----------------
+test servlet
+
+do get
+
+    PrintWriter out = response.getWriter();        // code to fetch / retrieve cookie         Cookie ck[] = request.getCookies();        if(ck!=null)        {            System.out.println(ck.length);            for(int i=0;i<ck.length;i++)            {                out.print("ck name : "+ck[i].getName());                out.print("<br>ck value : "+ck[i].getValue());            }        }        else        {            out.print("cookies are not added for you");        }
+
+========================================================
+HttpSession demo --------------------------
+
+Login.html ---------------
+
+<!DOCTYPE html><html><head><meta charset="ISO-8859-1"><title>Welcome to my Web Application</title></head><body><h1>Login Page</h1>Please enter your credentials<br><br><form action="LoginSessionServlet" method="get">User Name : <input type="text" name="username"/><br>Password : <input type="password" name="password"/><br><input type="submit" value="SignIn"/></form></body></html>
+
+
+-----------------------
+
+com.httpsession.demo.LoginSessionServlet----------------
+
+do get
+
+    System.out.println("in loginSessionServlet... do get method......");        PrintWriter out = response.getWriter();            String name = request.getParameter("username");            String pass = request.getParameter("password");            if(name!=null && pass!=null)            {                if(name.length()!=0 && pass.length()!=0)                {                    if(name.equals("techm")&&pass.equals("techm"))                    {                        HttpSession session = request.getSession(true);                                                session.setAttribute("lname", name);                        session.setAttribute("passwd", pass);                                                out.print("<B> Congratulations! you successfully logged in</b>");                        out.print("<br>click on below button to proceed<br>");                        out.print("<form action=\"CategoryServlet\">");                        out.print("<input type=submit name=submit value=submit/>");                        out.print("</form>");                    }                }                else                {                    out.print("<b> empty name and value is not allowed</b><br>");                    out.print("click on below link to go to login page<br>");                    
+
+      out.print("<a href=\"Login.html\">click here</a>");            }
+
+
+---------------------
+
+com.httpsession.demo.CategoryServlet
+
+    HttpSession session = request.getSession(true);        PrintWriter out = response.getWriter();        String name = (String)session.getAttribute("lname");        String pass = (String)session.getAttribute("passwd");        out.print("<B> Hello </b> <i>"+name+"</i>");        System.out.println(pass);        out.print("<br>below is the list of activities you can perform ...");    
+
+

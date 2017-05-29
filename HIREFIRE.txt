@@ -1,0 +1,51 @@
+create or replace package MANAGE_EMP_PACK as
+procedure hire_emp(p_eno emp.empno%type,p_nm emp.ename%type,p_job emp.job%type,p_mgr emp.mgr%type,p_hire emp.hiredate%type,p_sal emp.sal%type,p_com emp.comm%type,p_dept emp.deptno%type);
+procedure fire_emp(p_eno emp.empno%type);
+v_insert_cnt number:=0;
+v_delete_cnt number:=0;
+end;
+/
+
+
+create or replace package body MANAGE_EMP_PACK as
+ function validate_emp(p_eno emp.empno%type) return boolean as 
+ct number;
+begin
+select count(*) into ct from emp where empno=p_eno;
+if(ct=1) then
+dbms_output.put_line('employee number exists');
+return true;
+else
+dbms_output.put_line('employee number not exists');
+return false;
+end if;
+end;
+
+procedure hire_emp(p_eno emp.empno%type,p_nm emp.ename%type,p_job emp.job%type,p_mgr emp.mgr%type,p_hire emp.hiredate%type,p_sal emp.sal%type,p_com emp.comm%type,p_dept emp.deptno%type)as
+begin
+if (validate_emp(p_eno)) then
+dbms_output.put_line('employee no already exists');
+else
+insert into emp values(p_eno,p_nm,p_job,p_mgr,p_hire,p_sal,p_com,p_dept);
+v_insert_cnt:=v_insert_cnt+1;
+dbms_output.put_line('one emp added');
+end if;
+end;
+
+procedure fire_emp(p_eno emp.empno%type) as
+begin
+if (validate_emp(p_eno)) then
+delete from emp where empno=p_eno;
+v_delete_cnt:=v_delete_cnt+1;
+dbms_output.put_line('one emp deleted');
+else
+dbms_output.put_line('wrong employee number');
+end if;
+end;
+end;
+/
+
+
+execute MANAGE_EMP_PACK.hire_emp(7104,'SCOTT','ANALYST',7566,'09-DEC-82',72260.82,0,20);
+
+ 
